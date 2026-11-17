@@ -7,6 +7,10 @@
     { "source": "/signup", "destination": "/signup.html" },
     { "source": "/dashboard", "destination": "/dashboard.html" }
   ],
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/404.html" }
+  ],
   "functions": {
     "api/*.js": {
       "memory": 512,
