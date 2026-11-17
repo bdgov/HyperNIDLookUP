@@ -15,7 +15,7 @@
 
   <style>
     /* ==========================================================
-       HYPERNIDLOOKUP · DASHBOARD (COMPLETE VERSION)
+       HYPERNIDLOOKUP · DASHBOARD (FIXED SPACING + EDIT PROFILE)
        ========================================================== */
     :root {
       --red-deep: #8a0016;
@@ -127,7 +127,8 @@
     .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(145deg, var(--red-primary), var(--red-bright)); display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.82rem; flex-shrink: 0; }
     .user-chip .name { font-size: 0.82rem; font-weight: 600; color: var(--txt-dark); max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    .mobile-topbar { display: none; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--white); border-bottom: 1px solid var(--border-soft); position: sticky; top: 0; z-index: 40; }
+    /* Mobile Topbar - FIXED */
+    .mobile-topbar { display: none; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--white); border-bottom: 1px solid var(--border-soft); position: sticky; top: 0; z-index: 40; margin: 0 -16px 16px; }
     .mobile-topbar .brand-badge { width: 36px; height: 36px; font-size: 19px; }
     .mobile-topbar .brand-txt { font-size: 0.92rem; }
 
@@ -237,6 +238,19 @@
     .settings-item .si-text span { font-size: 0.74rem; color: var(--txt-dim); }
     .settings-item .material-icons-round.chevron { font-size: 20px; color: var(--txt-faint); }
 
+    /* ===================== MODAL (EDIT PROFILE) ===================== */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(26, 10, 13, 0.6); z-index: 200; backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 16px; }
+    .modal-overlay.show { display: flex; }
+    .modal-box { background: var(--white); border-radius: var(--radius-lg); width: 100%; max-width: 400px; padding: 24px; box-shadow: 0 24px 50px -12px rgba(0,0,0,0.5); animation: modalIn 0.3s var(--ease-spring); }
+    @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    .modal-box h3 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.2rem; margin-bottom: 16px; color: var(--txt-dark); }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-actions button { flex: 1; height: 44px; border-radius: var(--radius-md); font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.88rem; cursor: pointer; border: none; transition: all 0.2s; }
+    .btn-cancel { background: var(--surface-soft); color: var(--txt-body); border: 1px solid var(--border-soft); }
+    .btn-cancel:hover { background: var(--red-tint); color: var(--red-primary); }
+    .btn-save { background: linear-gradient(135deg, var(--red-primary), var(--red-bright)); color: #fff; }
+    .btn-save:hover { transform: translateY(-1px); }
+
     /* ===================== TOAST ===================== */
     .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(140%); background: var(--txt-dark); color: #fff; padding: 13px 22px; border-radius: var(--radius-md); font-size: 0.86rem; font-weight: 500; display: flex; align-items: center; gap: 10px; box-shadow: 0 20px 44px -12px rgba(0,0,0,0.55); z-index: 300; transition: transform 0.45s var(--ease-spring), opacity 0.35s; opacity: 0; pointer-events: none; max-width: 92%; width: max-content; }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
@@ -300,7 +314,7 @@
   </aside>
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-  <!-- MOBILE TOPBAR -->
+  <!-- MOBILE TOPBAR - FIXED -->
   <div class="mobile-topbar">
     <a href="/" class="sidebar-brand" style="border:none;margin:0;padding:0;">
       <span class="brand-badge material-icons-round">account_balance</span>
@@ -311,7 +325,6 @@
 
   <!-- MAIN CONTENT -->
   <main class="main-wrap" id="mainContent">
-    <!-- DESKTOP TOPBAR -->
     <div class="topbar">
       <h1>Dashboard<span>Welcome back, <strong id="greetName">User</strong> 👋</span></h1>
       <div class="topbar-actions">
@@ -443,9 +456,9 @@
       </div>
 
       <div class="settings-list">
-        <a class="settings-item" href="#account">
+        <a class="settings-item" href="#" id="editProfileBtn">
           <div class="si-icon"><span class="material-icons-round">badge</span></div>
-          <div class="si-text"><strong>Edit Profile</strong><span>Update your name and contact info</span></div>
+          <div class="si-text"><strong>Edit Profile</strong><span>Update your name and password</span></div>
           <span class="material-icons-round chevron">chevron_right</span>
         </a>
         <a class="settings-item" href="#transactions" data-tab="transactions">
@@ -476,6 +489,26 @@
   <div class="toast" id="toast" role="status" aria-live="polite">
     <span class="material-icons-round" id="toastIcon">check_circle</span>
     <span id="toastMessage">Welcome!</span>
+  </div>
+
+  <!-- EDIT PROFILE MODAL -->
+  <div class="modal-overlay" id="editProfileModal">
+    <div class="modal-box">
+      <h3>Edit Profile</h3>
+      <div class="input-group">
+        <label>Full Name</label>
+        <input type="text" id="editFullName" placeholder="Your full name">
+      </div>
+      <div class="input-group">
+        <label>New Password (leave blank to keep current)</label>
+        <input type="password" id="editPassword" placeholder="Min 8 characters">
+      </div>
+      <p style="font-size:0.72rem;color:var(--txt-faint);">Email address cannot be changed.</p>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancelEdit">Cancel</button>
+        <button class="btn-save" id="saveEdit">Save Changes</button>
+      </div>
+    </div>
   </div>
 
   <script type="module">
@@ -521,7 +554,7 @@
     document.getElementById('statUsed').textContent = creditsUsed;
     document.getElementById('statPurchased').textContent = creditsPurchased;
 
-    // ---------- Load Packages (DB Driven) ----------
+    // ---------- Load Packages ----------
     const { data: packages } = await supabase.from('packages').select('*').eq('is_active', true).order('price_bdt');
     const pkgGrid = document.getElementById('pkgGrid');
     
@@ -737,6 +770,61 @@
     });
 
     loadApiKeys();
+
+    // ---------- Edit Profile Logic ----------
+    const editModal = document.getElementById('editProfileModal');
+    const editName = document.getElementById('editFullName');
+    const editPassword = document.getElementById('editPassword');
+
+    document.getElementById('editProfileBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      editName.value = displayName;
+      editPassword.value = '';
+      editModal.classList.add('show');
+    });
+
+    document.getElementById('cancelEdit').addEventListener('click', () => {
+      editModal.classList.remove('show');
+    });
+
+    document.getElementById('saveEdit').addEventListener('click', async () => {
+      const newName = editName.value.trim();
+      const newPass = editPassword.value;
+
+      if (!newName) return showToast('Name cannot be empty.', 'error_outline');
+      if (newPass && newPass.length < 8) return showToast('Password must be at least 8 characters.', 'error_outline');
+
+      const btn = document.getElementById('saveEdit');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      // Update Name in DB
+      const { error: nameErr } = await supabase.from('profiles').update({ full_name: newName }).eq('id', user.id);
+      
+      // Update Password in Auth
+      let passErr = null;
+      if (newPass) {
+        const { error } = await supabase.auth.updateUser({ password: newPass });
+        passErr = error;
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Save Changes';
+
+      if (nameErr || passErr) {
+        showToast(nameErr?.message || passErr?.message || 'Update failed', 'error_outline');
+      } else {
+        editModal.classList.remove('show');
+        showToast('Profile updated successfully!', 'check_circle');
+        // Update UI name
+        const newInitials = newName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+        document.getElementById('profileName').textContent = newName;
+        document.getElementById('userName').textContent = newName;
+        document.getElementById('profileAvatar').textContent = newInitials;
+        document.getElementById('userAvatar').textContent = newInitials;
+        document.getElementById('greetName').textContent = newName.split(' ')[0];
+      }
+    });
 
     setTimeout(() => showToast(`Welcome back, ${displayName.split(' ')[0]}!`, 'waving_hand'), 500);
   </script>
