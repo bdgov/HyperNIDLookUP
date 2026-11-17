@@ -15,7 +15,7 @@
 
   <style>
     /* ==========================================================
-       HYPERNIDLOOKUP · DASHBOARD (PERFECTLY ALIGNED LAYOUT)
+       HYPERNIDLOOKUP · DASHBOARD (PERFECT LAYOUT & ROUNDED BOX)
        ========================================================== */
     :root {
       --red-deep: #8a0016;
@@ -53,6 +53,7 @@
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
       line-height: 1.55;
+      overflow-x: hidden; 
     }
 
     /* ===================== SIDEBAR ===================== */
@@ -126,8 +127,20 @@
     .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(145deg, var(--red-primary), var(--red-bright)); display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.82rem; flex-shrink: 0; }
     .user-chip .name { font-size: 0.82rem; font-weight: 600; color: var(--txt-dark); max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    /* Mobile Topbar */
-    .mobile-topbar { display: none; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--white); border-bottom: 1px solid var(--border-soft); position: sticky; top: 0; z-index: 40; margin: 0 -16px 20px; }
+    /* Mobile Topbar - FIXED STRAIGHT & WIDE */
+    .mobile-topbar { 
+      display: none; 
+      align-items: center; 
+      justify-content: space-between; 
+      padding: 14px 16px; 
+      background: var(--white); 
+      border-bottom: 1px solid var(--border-soft); 
+      position: sticky; 
+      top: 0; 
+      z-index: 40; 
+      margin: 0 0 20px 0; /* এটি বাঁকা হওয়া বন্ধ করবে */
+      border-radius: 0; 
+    }
     .mobile-topbar .brand-badge { width: 36px; height: 36px; font-size: 19px; }
     .mobile-topbar .brand-txt { font-size: 0.92rem; }
 
@@ -182,18 +195,20 @@
     .pkg-btn:hover { transform: translateY(-1px); }
     .pkg-btn.primary:hover { color: #fff; }
 
-    /* ===================== FORMS (SMOOTH ROUNDED) ===================== */
+    /* ===================== FORMS (EXACT BUTTON SHAPE) ===================== */
     .form-box { 
       background: var(--white); 
       border: 1px solid var(--border-soft); 
       border-radius: var(--radius-lg); 
       padding: 24px; 
+      width: 100%; 
       max-width: 560px; 
       margin: 0 auto; 
     }
     
     .input-group { 
       margin-bottom: 16px; 
+      width: 100%;
     }
     
     .input-group label { 
@@ -205,21 +220,23 @@
       padding-left: 4px; 
     }
     
+    /* এখানে border-radius: 14px দেওয়া হয়েছে যা বাটনের শেপের সাথে হুবহু মিলবে */
     .input-group input, 
     .input-group select { 
       width: 100%; 
       height: 52px; 
-      padding: 0 20px; 
+      padding: 0 16px; 
       font-family: 'Outfit', sans-serif; 
       font-size: 0.95rem; 
       background: #fff; 
       border: 1.5px solid var(--border-soft); 
-      border-radius: 16px; /* আপনার ইমেজের মত পারফেক্ট স্মুথ শেপ */
+      border-radius: 14px !important; /* বাটনের মতো হালকা রাউন্ড শেপ */
       outline: none; 
       color: var(--txt-dark); 
       transition: border-color 0.2s, box-shadow 0.2s; 
-      appearance: none; 
-      -webkit-appearance: none;
+      -webkit-appearance: none !important; 
+      -moz-appearance: none !important;
+      appearance: none !important;
     }
     
     .input-group input:focus, 
