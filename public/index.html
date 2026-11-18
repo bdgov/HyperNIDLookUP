@@ -657,6 +657,7 @@
       }
     }
   </style>
+  <script type="module" src="/js/site-config.js"></script>
 </head>
 <body>
 
@@ -905,8 +906,9 @@
   <!-- Supabase স্ক্রিপ্ট এবং ডাইনামিক প্যাকেজ লোড -->
   <script type="module">
     import { supabase } from '/supabase-client.js';
+    const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 
-    // টোস্ট ফাংশন
+    // টোস্ট ফাংশ
     const toast = document.getElementById('toast');
     const toastMsg = document.getElementById('toastMessage');
     const toastIcon = document.getElementById('toastIcon');
@@ -946,7 +948,7 @@
         const featureHTML = features.map(f => `
           <li class="${f.active ? '' : 'muted'}">
             <span class="material-icons-round">${f.active ? 'check_circle' : 'remove_circle'}</span> 
-            ${f.text}
+            ${escapeHtml(f.text)}
           </li>
         `).join('');
 
@@ -955,7 +957,7 @@
             ${p.is_featured ? '<div class="pkg-badge">Popular</div>' : ''}
             <div class="pkg-top">
               <div>
-                <div class="pkg-name">${p.name}</div>
+                <div class="pkg-name">${escapeHtml(p.name)}</div>
                 <div class="pkg-tagline">${p.credits} verifications</div>
               </div>
               <div class="pkg-price-block">
@@ -967,7 +969,7 @@
             <ul class="pkg-features">${featureHTML}</ul>
             <a href="/login.html" class="btn-pkg ${p.is_featured ? 'btn-pkg-primary' : 'btn-pkg-outline'}">
               <span class="material-icons-round">shopping_cart</span>
-              Buy ${p.name} · ৳${p.price_bdt}
+              Buy ${escapeHtml(p.name)} · ৳${p.price_bdt}
             </a>
           </div>
         `;

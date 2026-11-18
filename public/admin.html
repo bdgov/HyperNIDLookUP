@@ -260,6 +260,7 @@
       .main-wrap { margin-left: 0; padding: 16px; }
     }
   </style>
+  <script type="module" src="/js/site-config.js"></script>
 </head>
 
 <body>
@@ -344,6 +345,9 @@
               <th>User Email</th>
               <th>Package</th>
               <th>Amount</th>
+              <th>Payment</th>
+              <th>Sender Phone</th>
+              <th>Transaction ID</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
@@ -351,7 +355,7 @@
 
           <tbody id="txBody">
             <tr>
-              <td colspan="6" style="text-align:center;">Loading transactions...</td>
+              <td colspan="9" style="text-align:center;">Loading transactions...</td>
             </tr>
           </tbody>
         </table>
@@ -623,6 +627,9 @@
             package_id,
             amount_bdt,
             credits_added,
+            payment_method,
+            payment_ref,
+            sender_phone,
             status,
             created_at,
             profiles(email),
@@ -636,7 +643,7 @@
 
           tbody.innerHTML = `
             <tr>
-              <td colspan="6" style="text-align:center;">No transactions found.</td>
+              <td colspan="9" style="text-align:center;">No transactions found.</td>
             </tr>
           `;
 
@@ -658,21 +665,19 @@
 
           const actionButton = status === 'pending'
             ? `
-              <button
-                class="btn-action btn-approve"
-                data-approve="${escapeHTML(transaction.id)}"
-              >
-                Approve
-              </button>
-            `
-            : '—';
+              <button class="btn-action btn-approve" data-approve="${escapeHTML(transaction.id)}">Approve</button>
+              <button class="btn-action" style="background:#fee2e2;color:#991b1b;" data-reject="${escapeHTML(transaction.id)}">Reject</button>
+            ` : '—';
 
           return `
             <tr>
               <td>${escapeHTML(date)}</td>
               <td>${escapeHTML(transaction.profiles?.email || 'Unknown')}</td>
               <td>${escapeHTML(transaction.packages?.name || 'N/A')}</td>
-              <td>৳${escapeHTML(transaction.amount_bdt ?? 0)}</td>
+              <td>৳${escapeHTML(transaction.amount_bdt ?? 0)}<br><small>+${escapeHTML(transaction.credits_added ?? 0)} credits</small></td>
+              <td>${escapeHTML(transaction.payment_method || '—')}</td>
+              <td>${escapeHTML(transaction.sender_phone || '—')}</td>
+              <td style="max-width:150px;word-break:break-all;">${escapeHTML(transaction.payment_ref || '—')}</td>
               <td>
                 <span class="badge-status ${statusClass}">
                   ${escapeHTML(status)}
@@ -686,20 +691,15 @@
 
         // Attach approve event handlers
         tbody.querySelectorAll('[data-approve]').forEach(button => {
-
-          button.addEventListener('click', async () => {
-
-            const txId = button.dataset.approve;
-
-            await approveTx(txId, button);
-
-          });
-
+          button.addEventListener('click', async () => await reviewTx(button.dataset.approve, true, button));
+        });
+        tbody.querySelectorAll('[data-reject]').forEach(button => {
+          button.addEventListener('click', async () => await reviewTx(button.dataset.reject, false, button));
         });
 
       } catch (error) {
 
-        showTableError(tbody, 6, error);
+        showTableError(tbody, 9, error);
 
       }
 
@@ -759,118 +759,26 @@
     // APPROVE TRANSACTION
     // ==========================================
 
-    async function approveTx(txId, button) {
-
-      if (!confirm(
-        'Are you sure you want to approve this transaction and add credits to the user?'
-      )) return;
-
+    async function reviewTx(txId, approve, button) {
+      const action = approve ? 'approve' : 'reject';
+      if (!confirm(`Are you sure you want to ${action} this payment?`)) return;
       button.disabled = true;
       button.textContent = 'Processing...';
-
       try {
-
-        /*
-          IMPORTANT:
-          Client-side approval is not atomic.
-          This implementation is retained for compatibility
-          with the existing database structure.
-        */
-
-        // Step 1: Fetch transaction
-        const { data: transaction, error: txFetchError } = await supabase
-          .from('transactions')
-          .select('id, user_id, credits_added, status')
-          .eq('id', txId)
-          .single();
-
-        if (txFetchError) throw txFetchError;
-
-        if (!transaction) {
-          throw new Error('Transaction not found.');
-        }
-
-        if (transaction.status !== 'pending') {
-          throw new Error('This transaction has already been processed.');
-        }
-
-        const creditsToAdd = Number(transaction.credits_added);
-
-        if (!Number.isFinite(creditsToAdd) || creditsToAdd <= 0) {
-          throw new Error('Invalid transaction credits.');
-        }
-
-        // Step 2: Fetch current credits
-        const { data: userCredits, error: creditFetchError } = await supabase
-          .from('user_credits')
-          .select('credits_remaining, total_purchased')
-          .eq('user_id', transaction.user_id)
-          .maybeSingle();
-
-        if (creditFetchError) throw creditFetchError;
-
-        if (!userCredits) {
-          throw new Error(
-            'User credit record not found. Create the credit record first.'
-          );
-        }
-
-        const currentCredits = Number(userCredits.credits_remaining || 0);
-        const currentPurchased = Number(userCredits.total_purchased || 0);
-
-        // Step 3: Update credits
-        const { error: creditUpdateError } = await supabase
-          .from('user_credits')
-          .update({
-            credits_remaining: currentCredits + creditsToAdd,
-            total_purchased: currentPurchased + creditsToAdd
-          })
-          .eq('user_id', transaction.user_id);
-
-        if (creditUpdateError) throw creditUpdateError;
-
-        // Step 4: Update transaction status
-        const { error: txUpdateError } = await supabase
-          .from('transactions')
-          .update({
-            status: 'completed',
-            verified_at: new Date().toISOString()
-          })
-          .eq('id', txId)
-          .eq('status', 'pending');
-
-        if (txUpdateError) {
-
-          // Attempt rollback of the credit update
-          await supabase
-            .from('user_credits')
-            .update({
-              credits_remaining: currentCredits,
-              total_purchased: currentPurchased
-            })
-            .eq('user_id', transaction.user_id);
-
-          throw txUpdateError;
-        }
-
-        alert('Transaction approved successfully!');
-
-        await Promise.all([
-          loadTransactions(),
-          loadUsers()
-        ]);
-
+        const { error } = await supabase.rpc('admin_review_transaction', {
+          p_transaction_id: txId,
+          p_approve: approve,
+          p_note: approve ? 'Approved from Admin Panel' : 'Rejected from Admin Panel'
+        });
+        if (error) throw error;
+        alert(approve ? 'Payment approved and credits added once.' : 'Payment rejected.');
+        await Promise.all([loadTransactions(), loadUsers()]);
       } catch (error) {
-
-        console.error('Approve Transaction Error:', error);
-
-        alert('Approval failed: ' + (error.message || 'Unknown error'));
-
+        console.error('Transaction review error:', error);
+        alert('Action failed: ' + (error.message || 'Unknown error'));
         button.disabled = false;
-        button.textContent = 'Approve';
-
+        button.textContent = approve ? 'Approve' : 'Reject';
       }
-
     }
 
     // ==========================================
@@ -881,5 +789,6 @@
 
   </script>
 
+<a href="/admin-tools.html" style="position:fixed;right:18px;bottom:18px;z-index:99;background:#e11d48;color:#fff;padding:12px 16px;border-radius:12px;text-decoration:none;font-weight:700;">Admin Control Center</a>
 </body>
 </html>
