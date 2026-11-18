@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Welcome · HyperNIDLookUP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=Outfit:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0; padding: 0;
+      background: linear-gradient(135deg, #c1121f, #e63946);
+      display: flex; align-items: center; justify-content: center;
+      height: 100vh; overflow: hidden;
+      font-family: 'Outfit', sans-serif; color: #fff;
+      text-align: center;
+    }
+    .splash-content {
+      animation: zoomIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .logo-icon {
+      font-size: 80px; color: #fff;
+      margin-bottom: 20px;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+      animation: float 3s ease-in-out infinite;
+    }
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.5rem; margin: 0 0 10px;
+      letter-spacing: -1px;
+    }
+    p {
+      font-size: 1.1rem; opacity: 0.9; margin: 0;
+    }
+    .loader {
+      margin-top: 40px; width: 50px; height: 50px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: auto; margin-right: auto;
+    }
+    @keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round">
+</head>
+<body>
+  <div class="splash-content">
+    <span class="material-icons-round logo-icon">account_balance</span>
+    <h1>HyperNIDLookUP</h1>
+    <p>Bangladesh NID Verification</p>
+    <div class="loader"></div>
+  </div>
+
+  <script>
+    setTimeout(() => {
+      window.location.href = '/index.html';
+    }, 2500); // ২.৫ সেকেন্ড পর ল্যান্ডিং পেজে নিয়ে যাবে
+  </script>
+</body>
+</html>
